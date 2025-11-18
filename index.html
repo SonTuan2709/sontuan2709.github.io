@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini-game: Toxic Positivity</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #a8edea, #fed6e3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .game-box {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 25px;
+      padding: 40px;
+      width: 600px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    h1 {
+      color: #ff4d6d;
+      margin-bottom: 10px;
+    }
+    h2 {
+      color: #333;
+      font-size: 20px;
+      margin-top: 15px;
+    }
+    .icon {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 12px 0;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.3s;
+    }
+    .options button:hover {
+      transform: scale(1.03);
+      opacity: 0.9;
+    }
+    .feedback {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .next-btn, .restart-btn {
+      margin-top: 25px;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 15px;
+      background: #4CAF50;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: none;
+      transition: background 0.3s;
+    }
+    .next-btn:hover, .restart-btn:hover {
+      background: #43a047;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-box">
+    <h1>🎮 Toxic Positivity Game</h1>
+    <div class="icon" id="icon">🙂</div>
+    <h2 id="situation">Đang tải...</h2>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn">👉 Câu tiếp theo</button>
+    <button class="restart-btn" id="restartBtn">🔄 Chơi lại</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        icon: "📚",
+        situation: "Bạn bị điểm kém trong bài kiểm tra.",
+        answers: [
+          { text: "Thôi, vui vẻ lên, điểm số không quan trọng đâu! 😊", toxic: true },
+          { text: "Bạn có thể xem lại lỗi sai và cải thiện lần sau. 📘", toxic: false }
+        ]
+      },
+      {
+        icon: "🏠",
+        situation: "Một người bạn buồn vì gia đình có chuyện.",
+        answers: [
+          { text: "Thôi đừng buồn nữa, mọi chuyện đều có lý do! 🌈", toxic: true },
+          { text: "Mình hiểu điều đó rất khó khăn, nếu cần bạn có thể chia sẻ thêm với mình. 🤝", toxic: false }
+        ]
+      },
+      {
+        icon: "🏅",
+        situation: "Bạn bị loại khỏi đội tuyển thể thao.",
+        answers: [
+          { text: "Không sao, ít nhất bạn vẫn còn nhiều cái khác! 🙃", toxic: true },
+          { text: "Mình biết điều này làm bạn thất vọng, nhưng bạn đã nỗ lực rất nhiều rồi. 💪", toxic: false }
+        ]
+      },
+      {
+        icon: "👫",
+        situation: "Bạn của bạn vừa chia tay và rất buồn.",
+        answers: [
+          { text: "Có gì đâu, thiếu người này thì có người khác mà! 😉", toxic: true },
+          { text: "Mình hiểu điều đó tổn thương, bạn cần thời gian để hồi phục. ❤️", toxic: false }
+        ]
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let wrong = 0;
+    let shuffledQuestions = [];
+
+    const situationEl = document.getElementById("situation");
+    const optionsEl = document.getElementById("options");
+    const feedbackEl = document.getElementById("feedback");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const iconEl = document.getElementById("icon");
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+      shuffledQuestions = shuffle([...questions]);
+      currentQ = 0;
+      score = 0;
+      wrong = 0;
+      restartBtn.style.display = "none";
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = shuffledQuestions[currentQ];
+      iconEl.textContent = q.icon;
+      situationEl.textContent = q.situation;
+      optionsEl.innerHTML = "";
+      feedbackEl.textContent = "";
+      nextBtn.style.display = "none";
+
+      q.answers.forEach((a) => {
+        const btn = document.createElement("button");
+        btn.textContent = a.text;
+        btn.style.background = a.toxic ? "#FF6B6B" : "#4FC3F7";
+        btn.style.color = "white";
+        btn.onclick = () => selectAnswer(a);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(answer) {
+      if (answer.toxic) {
+        feedbackEl.textContent = "❌ Đây là phản ứng Toxic Positivity!";
+        feedbackEl.style.color = "red";
+        wrong++;
+      } else {
+        feedbackEl.textContent = "✅ Đây là phản ứng lành mạnh!";
+        feedbackEl.style.color = "green";
+        score++;
+      }
+      nextBtn.style.display = "inline-block";
+    }
+
+    nextBtn.onclick = () => {
+      currentQ++;
+      if (currentQ < shuffledQuestions.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      iconEl.textContent = "🎉";
+      situationEl.textContent = "Kết thúc trò chơi!";
+      optionsEl.innerHTML = "";
+      feedbackEl.innerHTML = `
+        ✅ Trả lời đúng: ${score}<br>
+        ❌ Trả lời sai: ${wrong}<br>
+        🌟 Điểm số: ${(score * 100 / shuffledQuestions.length).toFixed(0)}%
+      `;
+      nextBtn.style.display = "none";
+      restartBtn.style.display = "inline-block";
+    }
+
+    restartBtn.onclick = startGame;
+
+    startGame();
+  </script>
+</body>
+</html>
+ <body>
+  <div class="container">
+    <h1>🎲 Mini-game: Toxic Positivity</h1>
+
+    <!-- Thông tin nhóm -->
+    <div class="credits">
+      <p>🏫 Trường THPT Tân Phong</p>
+      <p>👥 Nhóm NCKH</p>
+      <p>✍️ Hứa Nhật Linh – Trần Minh Truyền</p>
+    </div>
+
+    <div id="game">
+      <p id="situation"></p>
+      <div id="choices"></div>
+      <p id="feedback"></p>
+      <button id="nextBtn" onclick="nextQuestion()" style="display:none;">Câu tiếp theo</button>
+    </div>
+    <p id="score"></p>
+  </div>
+</body>
+ 
+
